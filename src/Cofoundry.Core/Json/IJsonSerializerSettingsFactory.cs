@@ -16,12 +16,12 @@ namespace Cofoundry.Core.Json
         /// <summary>
         /// Creates a new JsonSerializerSettings instance .
         /// </summary>
-        JsonSerializerSettings Create();
+        Newtonsoft.Json.JsonSerializerSettings Create();
 
         /// <summary>
         /// Applies the json serializer settings to an existing settings instance.
         /// </summary>
         /// <param name="settings">An existing settings instance to apply updated settings to.</param>
-        JsonSerializerSettings Configure(JsonSerializerSettings settings);
+        Newtonsoft.Json.JsonSerializerSettings Configure(Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions settings);
     }
 }

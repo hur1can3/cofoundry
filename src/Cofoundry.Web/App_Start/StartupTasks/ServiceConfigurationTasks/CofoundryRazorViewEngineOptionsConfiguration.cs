@@ -1,4 +1,5 @@
 ﻿using Cofoundry.Core;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace Cofoundry.Web
             _resourceFileProviderFactory = resourceFileProviderFactory;
         }
 
-        public void Configure(RazorViewEngineOptions options)
+        public void Configure(MvcRazorRuntimeCompilationOptions options)
         {
             if (options == null) throw new ArgumentNullException(nameof(options));
 

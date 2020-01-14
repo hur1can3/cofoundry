@@ -18,9 +18,9 @@ namespace Cofoundry.Core.Json
         /// <summary>
         /// Creates a new JsonSerializerSettings instance .
         /// </summary>
-        public JsonSerializerSettings Create()
+        public Newtonsoft.Json.JsonSerializerSettings Create()
         {
-            var settings = new JsonSerializerSettings();
+            Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions settings = new Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions();
 
             return Configure(settings);
         }
@@ -29,15 +29,15 @@ namespace Cofoundry.Core.Json
         /// Applies the json serializer settings to an existing settings instance.
         /// </summary>
         /// <param name="settings">An existing settings instance to apply updated settings to.</param>
-        public JsonSerializerSettings Configure(JsonSerializerSettings settings)
+        public Newtonsoft.Json.JsonSerializerSettings Configure(Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions settings)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
 
-            settings.Converters.Add(new StringEnumConverter());
-            settings.Converters.Add(new HtmlStringJsonConverter());
-            settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            settings.SerializerSettings.Converters.Add(new StringEnumConverter());
+            settings.SerializerSettings.Converters.Add(new HtmlStringJsonConverter());
+            settings.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
-            return settings;
+            return settings.SerializerSettings;
         }
     }
 }

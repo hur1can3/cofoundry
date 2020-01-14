@@ -10,8 +10,8 @@ namespace Cofoundry.Web
 {
     /// <summary>
     /// Configures the error pages returned by the application for both exceptions and
-    /// error status codes such as 404s. This is done using the built-in the ASP.NET 
-    /// error handling and status code pages middleware. 
+    /// error status codes such as 404s. This is done using the built-in the ASP.NET
+    /// error handling and status code pages middleware.
     /// </summary>
     public class ErrorHandlingMiddlewareConfigurationTask : IStartupConfigurationTask
     {
@@ -28,12 +28,12 @@ namespace Cofoundry.Web
 
         public void Configure(IApplicationBuilder app)
         {
-            var env = app.ApplicationServices.GetService<IHostingEnvironment>();
+            var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
 
             if (_debugSettings.CanShowDeveloperExceptionPage(env))
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
+                //app.UseDatabaseErrorPage();
             }
             else
             {

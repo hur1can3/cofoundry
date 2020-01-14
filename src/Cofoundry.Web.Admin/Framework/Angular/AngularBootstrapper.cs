@@ -27,7 +27,7 @@ namespace Cofoundry.Web.Admin
         private readonly IAdminRouteLibrary _adminRouteLibrary;
         private readonly IUserContextService _userContextService;
         private readonly IQueryExecutor _queryExecutor;
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly DebugSettings _debugSettings;
         private readonly AdminSettings _adminSettings;
 
@@ -38,7 +38,7 @@ namespace Cofoundry.Web.Admin
             IUserContextService userContextService,
             IAdminRouteLibrary adminRouteLibrary,
             IQueryExecutor queryExecutor,
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             DebugSettings debugSettings,
             AdminSettings adminSettings
             )
@@ -86,9 +86,9 @@ namespace Cofoundry.Web.Admin
         #region private helpers
 
         private void AddScript(
-            List<string> scriptToAddTo, 
-            ModuleRouteLibrary moduleRouteLibrary, 
-            string fileName, 
+            List<string> scriptToAddTo,
+            ModuleRouteLibrary moduleRouteLibrary,
+            string fileName,
             bool checkIfResourceExists = false
             )
         {
@@ -127,16 +127,17 @@ namespace Cofoundry.Web.Admin
         private async Task<string> RenderBootstrapperAsync(AngularModuleRouteLibrary routeLibrary, object options)
         {
             var args = string.Empty;
-            if (_hostingEnvironment.IsDevelopment())
+            if (_hostingEnvironment.EnvironmentName == "Development")
             {
                 // use strict DI when in debug mode to throw up errors
-                args = ", { strictDi: true }"; 
+                args = ", { strictDi: true }";
             }
 
             // Might need to add more info at some point, but right now we just need roles.
             var user = await _userContextService.GetCurrentContextByUserAreaAsync(CofoundryAdminUserArea.AreaCode);
             var role = await _queryExecutor.ExecuteAsync(new GetRoleDetailsByIdQuery(user.RoleId));
-            var currentUserInfo = new {
+            var currentUserInfo = new
+            {
                 PermissionCodes = role
                     .Permissions
                     .Select(p => p.GetUniqueCode())
@@ -151,8 +152,8 @@ namespace Cofoundry.Web.Admin
                                .constant('csrfToken', '" + tokens.RequestToken + @"')
                                .constant('csrfHeaderName', '" + tokens.HeaderName + @"')"
                                + GetConstant(_adminRouteLibrary.Shared, "showDevException", canShowDeveloperException)
-                               + GetConstant(_adminRouteLibrary.Shared, "serviceBase", "/" + _adminSettings.DirectoryName + "/api/") 
-                               + GetConstant(_adminRouteLibrary.Shared, "pluginServiceBase", "/" + _adminSettings.DirectoryName + "/api/plugins/") 
+                               + GetConstant(_adminRouteLibrary.Shared, "serviceBase", "/" + _adminSettings.DirectoryName + "/api/")
+                               + GetConstant(_adminRouteLibrary.Shared, "pluginServiceBase", "/" + _adminSettings.DirectoryName + "/api/plugins/")
                                + GetConstant(_adminRouteLibrary.Shared, "urlBaseBase", "/" + _adminSettings.DirectoryName + "/")
                                + GetConstant(_adminRouteLibrary.Shared, "internalContentPath", _adminRouteLibrary.Shared.GetStaticResourceUrlPath() + "/")
                                + GetConstant(_adminRouteLibrary.Shared, "pluginContentPath", _adminRouteLibrary.SharedPlugin.GetStaticResourceUrlPath() + "/")
@@ -179,6 +180,6 @@ namespace Cofoundry.Web.Admin
             return string.Empty;
         }
 
-        #endregion
+        #endregion private helpers
     }
 }

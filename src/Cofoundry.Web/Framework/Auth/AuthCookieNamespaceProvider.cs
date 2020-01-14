@@ -8,7 +8,7 @@ using System.Text;
 namespace Cofoundry.Web
 {
     /// <summary>
-    /// Used to get a string that is used to make the auth cookies unique. The 
+    /// Used to get a string that is used to make the auth cookies unique. The
     /// user area code will be appended to this to make the cookiename, e.g.
     /// "MyAppAuth_COF". By default the cookie namespace is created
     /// using characters from the entry assembly name of your applicaiton, but
@@ -17,11 +17,11 @@ namespace Cofoundry.Web
     /// </summary>
     public class AuthCookieNamespaceProvider : IAuthCookieNamespaceProvider
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly AuthenticationSettings _authenticationSettings;
 
         public AuthCookieNamespaceProvider(
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             AuthenticationSettings authenticationSettings
             )
         {
@@ -40,8 +40,8 @@ namespace Cofoundry.Web
                 return _authenticationSettings.CookieNamespace;
             }
 
-            // Try and build a short and somewhat unique name using the 
-            // application name, which should suffice for most scenarios. 
+            // Try and build a short and somewhat unique name using the
+            // application name, which should suffice for most scenarios.
             var appName = _hostingEnvironment.ApplicationName;
 
             var reasonablyUniqueName = appName

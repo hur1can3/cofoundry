@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Cofoundry.Web
@@ -23,9 +24,9 @@ namespace Cofoundry.Web
             _jsonSerializerSettingsFactory = jsonSerializerSettingsFactory;
         }
 
-        public void Configure(MvcJsonOptions options)
+        public void Configure(Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions options)
         {
-            _jsonSerializerSettingsFactory.Configure(options.SerializerSettings);
+            _jsonSerializerSettingsFactory.Configure(options);
         }
     }
 }

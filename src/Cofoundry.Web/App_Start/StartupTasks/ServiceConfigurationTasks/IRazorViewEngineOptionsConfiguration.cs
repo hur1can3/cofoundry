@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,6 @@ namespace Cofoundry.Web
         /// Performs additional option configuration. 
         /// </summary>
         /// <param name="options">The options to perform configuration on.</param>
-        void Configure(RazorViewEngineOptions options);
+        void Configure(MvcRazorRuntimeCompilationOptions options);
     }
 }

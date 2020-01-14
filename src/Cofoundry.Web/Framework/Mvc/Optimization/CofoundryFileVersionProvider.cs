@@ -2,7 +2,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See https://github.com/aspnet/AspNetCore/blob/master/LICENSE.txt for license information.
 
-using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.WebUtilities;
@@ -117,7 +116,7 @@ namespace Cofoundry.Web
         /// </remarks>
         private static string GetHashForFile(IFileInfo fileInfo)
         {
-            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
             {
                 using (var readStream = fileInfo.CreateReadStream())
                 {

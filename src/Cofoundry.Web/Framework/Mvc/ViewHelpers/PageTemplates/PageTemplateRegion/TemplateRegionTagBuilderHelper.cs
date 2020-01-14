@@ -1,5 +1,5 @@
 ﻿using AngleSharp.Dom;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 using Cofoundry.Core.Web;
 using System;
 using System.Collections.Generic;
@@ -32,17 +32,17 @@ namespace Cofoundry.Web
         }
 
         public static string WrapInTag(
-            string pageBlocksHtml, 
+            string pageBlocksHtml,
             string wrappingTagName,
             bool allowMultiplePageBlocks,
             Dictionary<string, string> additonalHtmlAttributes,
             Dictionary<string, string> editorAttributes = null
             )
         {
-            const string DEFAULT_TAG ="div";
+            const string DEFAULT_TAG = "div";
 
             var parser = new HtmlParser();
-            var document = parser.Parse(pageBlocksHtml.Trim());
+            var document = parser.ParseDocument(pageBlocksHtml.Trim());
 
             IElement wrapper;
             // No need to wrap if its a single page block with a single outer node.

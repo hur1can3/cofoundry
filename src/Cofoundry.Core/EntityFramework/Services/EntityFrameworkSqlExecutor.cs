@@ -33,7 +33,7 @@ namespace Cofoundry.Core.EntityFramework
             _transactionScopeFactory = transactionScopeFactory;
         }
 
-        #endregion
+        #endregion constructor
 
         #region ExecuteQuery
 
@@ -61,28 +61,28 @@ namespace Cofoundry.Core.EntityFramework
                 var cmd = FormatSqlCommand(spName, sqlParams);
 
                 // Here we used to use SqlQuery() in EF6 but it isn't supported
-                // until raw sql access is added to EF we'll have to be restricted 
+                // until raw sql access is added to EF we'll have to be restricted
                 // to entities only.
                 // see https://github.com/aspnet/EntityFramework/issues/1862
                 // and https://github.com/aspnet/EntityFrameworkCore/issues/10753
 
                 //var results = _dbContext.Database.SqlQuery<T>(cmd, sqlParams);
-                var results = dbContext.Set<T>().FromSql(cmd, sqlParams);
+                var results = dbContext.Set<T>().FromSqlRaw(cmd, sqlParams);
 
                 return results;
             }
             else
             {
-                return dbContext.Set<T>().FromSql(spName);
+                return dbContext.Set<T>().FromSqlRaw(spName);
             }
         }
 
-        #endregion
+        #endregion ExecuteQuery
 
         #region ExecuteScalar
 
         /// <summary>
-        /// Executes a stored procedure returning a single result and forcing query 
+        /// Executes a stored procedure returning a single result and forcing query
         /// execution. This does not run in a transaction.
         /// </summary>
         /// <param name="dbContext">EF DbContext to run the command against.</param>
@@ -99,17 +99,18 @@ namespace Cofoundry.Core.EntityFramework
 
             using (concurrencyDetector.EnterCriticalSection())
             {
-                var rawSqlCommand = databaseFacade
+                RawSqlCommand rawSqlCommand = databaseFacade
                     .GetService<IRawSqlCommandBuilder>()
                     .Build(sql, sqlParams);
 
+                var rConnection = databaseFacade.GetService<IRelationalConnection>();
+                var dParams = rawSqlCommand.ParameterValues;
+                var rparam = new RelationalCommandParameterObject(rConnection, dParams, dbContext, null);
                 var result = await rawSqlCommand
-                    .RelationalCommand
-                    .ExecuteScalarAsync(
-                        databaseFacade.GetService<IRelationalConnection>(),
-                        rawSqlCommand.ParameterValues);
+                  .RelationalCommand
+                  .ExecuteScalarAsync(rparam);
 
-                var typedResult = ParseScalarResult<T>(result);
+                T typedResult = ParseScalarResult<T>(result);
 
                 return typedResult;
             }
@@ -128,20 +129,20 @@ namespace Cofoundry.Core.EntityFramework
             return (T)Convert.ChangeType(result, typeof(T));
         }
 
-        #endregion
+        #endregion ExecuteScalar
 
         #region ExecuteCommand
 
         /// <summary>
-        /// Executes a stored procedure or function returning either the number of rows affected or 
-        /// optionally returning the value of the first output parameter passed in the parameters 
+        /// Executes a stored procedure or function returning either the number of rows affected or
+        /// optionally returning the value of the first output parameter passed in the parameters
         /// collection. The command is executed in a transaction created via ITransactionFactory.
         /// </summary>
         /// <param name="dbContext">EF DbContext to run the command against.</param>
         /// <param name="spName">Name of the stored procedure to run</param>
         /// <param name="sqlParams">Collection of SqlParameters to pass to the command</param>
         /// <returns>
-        /// Either the number of rows affected or optionally returning the value of the 
+        /// Either the number of rows affected or optionally returning the value of the
         /// first output parameter passed in the parameters collection.
         /// </returns>
         public async Task<object> ExecuteCommandAsync(DbContext dbContext, string spName, params SqlParameter[] sqlParams)
@@ -190,16 +191,16 @@ namespace Cofoundry.Core.EntityFramework
             return null;
         }
 
-        #endregion
+        #endregion ExecuteCommand
 
         #region ExecuteCommandWithOutput
 
         /// <summary>
-        /// Executes a stored procedure or function returning the value of the 
+        /// Executes a stored procedure or function returning the value of the
         /// output paramter. The output parameter is created for you so you do not need
         /// to specify it in the sqlParams collection. If more than one output parameter
         /// is specified only the first is returned. The generic type parameter is used
-        /// as the output parameter type. The command is executed in a transaction created 
+        /// as the output parameter type. The command is executed in a transaction created
         /// via ITransactionFactory.
         /// </summary>
         /// <typeparam name="T">Type of the returned output parameter.</typeparam>
@@ -246,11 +247,10 @@ namespace Cofoundry.Core.EntityFramework
         {
             var outputParam = _sqlParameterFactory.CreateOutputParameterByType(outputParameterName, typeof(T));
 
-
             return outputParam;
         }
 
-        #endregion
+        #endregion ExecuteCommandWithOutput
 
         #region private helpers
 
@@ -292,6 +292,6 @@ namespace Cofoundry.Core.EntityFramework
             return string.Empty;
         }
 
-        #endregion
+        #endregion private helpers
     }
 }

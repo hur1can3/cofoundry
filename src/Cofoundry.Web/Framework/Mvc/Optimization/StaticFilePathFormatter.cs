@@ -10,7 +10,7 @@ namespace Cofoundry.Web
     /// to a static resource uri. This is basically an injectable version
     /// of the "asp-append-version" tag helper attribute that works across 
     /// all registered static file providers. Note that the build in tag
-    /// helper only works for IHostingEnvironment.WebRootFileProvider
+    /// helper only works for IWebHostEnvironment.WebRootFileProvider
     /// </summary>
     public class StaticFilePathFormatter : IStaticFilePathFormatter
     {

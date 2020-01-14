@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Cofoundry.Domain;
 using Cofoundry.Core.Web;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using AngleSharp.Parser.Html;
 using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 
 namespace Cofoundry.Web
 {
     /// <summary>
-    /// Controls rendering of page blocks, rendering the razor templates out to 
+    /// Controls rendering of page blocks, rendering the razor templates out to
     /// a string
     /// </summary>
     public class PageBlockRenderer : IPageBlockRenderer
@@ -38,8 +38,8 @@ namespace Cofoundry.Web
         /// <param name="blockViewModel">The view model for the module being rendered.</param>
         /// <returns>The rendered module html.</returns>
         public async Task<string> RenderBlockAsync(
-            ViewContext viewContext, 
-            IEditablePageViewModel pageViewModel, 
+            ViewContext viewContext,
+            IEditablePageViewModel pageViewModel,
             IEntityVersionPageBlockRenderDetails blockViewModel
             )
         {
@@ -72,7 +72,7 @@ namespace Cofoundry.Web
             return html;
         }
 
-        #endregion
+        #endregion public methods
 
         #region private helpers
 
@@ -117,7 +117,7 @@ namespace Cofoundry.Web
             var attrs = new Dictionary<string, string>();
             attrs.Add("class", "cofoundry-sv__block");
             attrs.Add("data-cms-" + entityType + "-region-block", string.Empty);
-            
+
             if (blockViewModel != null)
             {
                 attrs.Add("data-cms-version-block-id", blockViewModel.EntityVersionPageBlockId.ToString());
@@ -126,7 +126,7 @@ namespace Cofoundry.Web
             }
 
             var parser = new HtmlParser();
-            var document = parser.Parse(blockHtml.Trim());
+            var document = parser.ParseDocument(blockHtml.Trim());
 
             var elements = document.Body.Children;
 
@@ -149,6 +149,6 @@ namespace Cofoundry.Web
             return wrapper.OuterHtml;
         }
 
-        #endregion
+        #endregion private helpers
     }
 }

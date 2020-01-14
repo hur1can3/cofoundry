@@ -1,5 +1,5 @@
 ﻿using Cofoundry.Core.ResourceFiles;
-using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using System;
@@ -16,7 +16,7 @@ namespace Cofoundry.Web
         private readonly IList<IFileProvider> _fileProviders;
 
         public WebsiteResourceLocator(
-            IOptions<RazorViewEngineOptions> mvcOptions
+            IOptions<MvcRazorRuntimeCompilationOptions> mvcOptions
             )
         {
             _fileProviders = mvcOptions.Value.FileProviders;
@@ -45,7 +45,7 @@ namespace Cofoundry.Web
         public IDirectoryContents GetDirectory(string virtualDir)
         {
             IDirectoryContents directoryContents = null;
-            
+
             foreach (var fileProvider in _fileProviders)
             {
                 directoryContents = fileProvider.GetDirectoryContents(virtualDir);

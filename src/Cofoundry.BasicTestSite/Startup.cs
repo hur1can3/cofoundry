@@ -36,10 +36,10 @@ namespace Cofoundry.BasicTestSite
                 .AddCofoundry(Configuration);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // Https redirection / cookie policy and hsts is all non-cofoundry stuff
-            if (!env.IsDevelopment())
+            if (env.EnvironmentName != "Development")
             {
                 app.UseHsts();
             }
@@ -48,7 +48,6 @@ namespace Cofoundry.BasicTestSite
             app.UseCookiePolicy();
 
             app.UseCofoundry();
-
         }
     }
 }

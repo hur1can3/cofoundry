@@ -36,7 +36,7 @@ namespace Cofoundry.Web
             IEnumerable<IAssemblyDiscoveryRule> rules
             )
         {
-            var environment = GetServiceFromCollection<IHostingEnvironment>(mvcBuilder.Services);
+            var environment = GetServiceFromCollection<IWebHostEnvironment>(mvcBuilder.Services);
             if (string.IsNullOrEmpty(environment?.ApplicationName)) return Enumerable.Empty<Assembly>();
 
             var entryAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));

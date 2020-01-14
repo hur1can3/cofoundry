@@ -1,7 +1,9 @@
 ﻿using Cofoundry.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,27 +44,29 @@ namespace Cofoundry.Web
         public void ConfigureServices(IMvcBuilder mvcBuilder)
         {
             // Set MVC compatibility to latest tested version.
-            mvcBuilder.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            mvcBuilder.SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             _authConfiguration.Configure(mvcBuilder);
 
-            foreach (var config in EnumerableHelper
+            foreach (IMvcJsonOptionsConfiguration config in EnumerableHelper
                 .Enumerate(_mvcJsonOptionsConfigurations)
                 .OrderByDescending(o => o is CofoundryMvcJsonOptionsConfiguration))
             {
-                mvcBuilder.Services.Configure<MvcJsonOptions>(o => config.Configure(o));
+                //mvcBuilder.Services.Configure<JsonSerializerSettings>(o => config.Configure(o));
+                mvcBuilder.Services.Configure<MvcNewtonsoftJsonOptions>(o => config.Configure(o));
+                //mvcBuilder.Services.AddMvc().AddNewtonsoftJson(opt => config.Configure(opt));
             }
 
-            foreach (var config in EnumerableHelper.Enumerate(_mvcOptionsConfigurations))
+            foreach (IMvcOptionsConfiguration config in EnumerableHelper.Enumerate(_mvcOptionsConfigurations))
             {
                 mvcBuilder.Services.Configure<MvcOptions>(o => config.Configure(o));
             }
 
-            foreach (var config in EnumerableHelper
+            foreach (IRazorViewEngineOptionsConfiguration config in EnumerableHelper
                 .Enumerate(_razorViewEngineOptionsConfigurations)
                 .OrderByDescending(o => o is CofoundryRazorViewEngineOptionsConfiguration))
             {
-                mvcBuilder.Services.Configure<RazorViewEngineOptions>(o => config.Configure(o));
+                mvcBuilder.Services.Configure<MvcRazorRuntimeCompilationOptions>(o => config.Configure(o));
             }
         }
     }
