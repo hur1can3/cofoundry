@@ -40,6 +40,10 @@ namespace Cofoundry.Domain.Data
                 .MapCofoundryContent()
                 .ApplyConfiguration(new SettingMap())
                 .ApplyConfiguration(new RewriteRuleMap())
+                .HasDbFunction(typeof(SqlServerJsonExtension)
+                                .GetMethod(nameof(SqlServerJsonExtension.JsonValue)))
+                    .HasSchema("")
+                    .HasName("JSON_VALUE")                    
                 ;
         }
 

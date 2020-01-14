@@ -80,8 +80,8 @@ namespace Cofoundry.Domain
 
             PagedQueryResult<CustomEntityVersion> dbPagedResult = await dbQuery
                 .SortBy(definition, query.SortBy, query.SortDirection)
-                .Include(e => e.CustomEntity)
                 .Select(p => p.CustomEntityVersion)
+                .Include(e => e.CustomEntity)
                 .ToPagedResultAsync(query);
 
             return dbPagedResult;

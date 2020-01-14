@@ -11,18 +11,18 @@ namespace Cofoundry.Domain
 
         public Expression Map(IEnumerable<ICustomEntitySearchSpecification> specifications)
         {
-            ICustomEntitySearchSpecification result = specifications.FirstOrDefault();
+            var result = specifications.FirstOrDefault();
             if(result != null)
             {
                 if (specifications.Count() == 1) return result.RawExpression;
-                Expression expression = ((LambdaExpression)result.RawExpression).Body;
-                ParameterExpression parameter = ((LambdaExpression)result.RawExpression).Parameters.Single();
-                foreach(ICustomEntitySearchSpecification spec in specifications.Skip(1))
+                var expression = ((LambdaExpression)result.RawExpression).Body;
+                var parameter = ((LambdaExpression)result.RawExpression).Parameters.Single();
+                foreach(var spec in specifications.Skip(1))
                 {
                     expression = Expression.AndAlso(((BinaryExpression)expression), ((LambdaExpression)spec.RawExpression).Body);
                 }
                 expression = Expression.Lambda(expression, parameter);
-                ParameterSubstituteVisitor visitor = new ParameterSubstituteVisitor(parameter);
+                var visitor = new ParameterSubstituteVisitor(parameter);
                 return visitor.Visit(expression);
             }
             return null;
