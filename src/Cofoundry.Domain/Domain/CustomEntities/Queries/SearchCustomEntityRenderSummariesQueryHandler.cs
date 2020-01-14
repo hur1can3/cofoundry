@@ -30,7 +30,7 @@ namespace Cofoundry.Domain
             _customEntityDefinitionRepository = customEntityDefinitionRepository;
         }
 
-        #endregion
+        #endregion constructor
 
         #region execution
 
@@ -54,7 +54,7 @@ namespace Cofoundry.Domain
                 .FilterActive()
                 .FilterByStatus(query.PublishStatus, executionContext.ExecutionDate);
 
-            // Filter by locale 
+            // Filter by locale
             if (query.LocaleId > 0 && definition.HasLocale)
             {
                 dbQuery = dbQuery.Where(p => p.CustomEntity.LocaleId == query.LocaleId);
@@ -66,14 +66,15 @@ namespace Cofoundry.Domain
 
             var dbPagedResult = await dbQuery
                 .SortBy(definition, query.SortBy, query.SortDirection)
+                .Include(e => e.CustomEntityVersion)
+                .ThenInclude(e => e.CustomEntity)
                 .Select(p => p.CustomEntityVersion)
-                .Include(e => e.CustomEntity)
                 .ToPagedResultAsync(query);
 
             return dbPagedResult;
         }
 
-        #endregion
+        #endregion execution
 
         #region Permission
 
@@ -85,6 +86,6 @@ namespace Cofoundry.Domain
             yield return new CustomEntityReadPermission(definition);
         }
 
-        #endregion
+        #endregion Permission
     }
 }

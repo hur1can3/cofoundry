@@ -11,11 +11,11 @@ namespace Cofoundry.Domain
 {
     /// <summary>
     /// Search page data returning the PageSummary projection, which is primarily used
-    /// to display lists of page information in the admin panel. The query isn't version 
+    /// to display lists of page information in the admin panel. The query isn't version
     /// specific and should not be used to render content out to a live page because some of
     /// the pages returned may be unpublished.
     /// </summary>
-    public class SearchPageSummariesQueryHandler 
+    public class SearchPageSummariesQueryHandler
         : IAsyncQueryHandler<SearchPageSummariesQuery, PagedQueryResult<PageSummary>>
         , IPermissionRestrictedQueryHandler<SearchPageSummariesQuery, PagedQueryResult<PageSummary>>
     {
@@ -34,7 +34,7 @@ namespace Cofoundry.Domain
             _pageSummaryMapper = pageSummaryMapper;
         }
 
-        #endregion
+        #endregion constructor
 
         #region execution
 
@@ -63,7 +63,7 @@ namespace Cofoundry.Domain
             {
                 dbQuery = dbQuery.Where(v => v.PageVersion.PageTemplateId == query.PageTemplateId);
             }
-            
+
             // Filter by tags
             if (!string.IsNullOrEmpty(query.Tags))
             {
@@ -90,13 +90,14 @@ namespace Cofoundry.Domain
             if (query.PublishStatus == PublishStatus.Published)
             {
                 dbQuery = dbQuery.Where(p => p.Page.PublishStatusCode == PublishStatusCode.Published);
-            } else if (query.PublishStatus == PublishStatus.Unpublished)
+            }
+            else if (query.PublishStatus == PublishStatus.Unpublished)
             {
                 // A page might be published, but also have a draft as the latest version
                 dbQuery = dbQuery.Where(p => p.Page.PublishStatusCode == PublishStatusCode.Unpublished);
             }
 
-            // Filter by locale 
+            // Filter by locale
             if (query.LocaleId > 0)
             {
                 dbQuery = dbQuery.FilterByLocaleId(query.LocaleId.Value);
@@ -116,14 +117,13 @@ namespace Cofoundry.Domain
 
             return dbQuery
                 .SortBy(query.SortBy, query.SortDirection)
+                .Include(p => p.Page.Creator)
                 .Select(p => p.Page)
-                .Include(p => p.Creator)
                 ;
         }
 
+        #endregion execution
 
-        #endregion
-        
         #region Permission
 
         public IEnumerable<IPermissionApplication> GetPermissions(SearchPageSummariesQuery query)
@@ -131,6 +131,6 @@ namespace Cofoundry.Domain
             yield return new PageReadPermission();
         }
 
-        #endregion
+        #endregion Permission
     }
 }

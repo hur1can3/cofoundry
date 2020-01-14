@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Cofoundry.Core;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Cofoundry.Core.EntityFramework;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Cofoundry.Domain.Data
 {
     /// <summary>
-    /// The main Cofoundry entity framework DbContext representing all the main 
+    /// The main Cofoundry entity framework DbContext representing all the main
     /// entities in the Cofoundry database. Direct access to the DbContext is
     /// discouraged, instead we advise you use the domain queries and commands
     /// available in the Cofoundry data repositories, see
@@ -28,7 +30,7 @@ namespace Cofoundry.Domain.Data
         {
             _cofoundryDbContextInitializer.Configure(this, optionsBuilder);
 
-            optionsBuilder.ConfigureWarnings(warnings => 
+            optionsBuilder.ConfigureWarnings(warnings =>
                 warnings.Log(RelationalEventId.QueryClientEvaluationWarning)
             );
         }
@@ -39,12 +41,21 @@ namespace Cofoundry.Domain.Data
                 .HasDefaultSchema(DbConstants.CofoundrySchema)
                 .MapCofoundryContent()
                 .ApplyConfiguration(new SettingMap())
-                .ApplyConfiguration(new RewriteRuleMap())
-                .HasDbFunction(typeof(SqlServerJsonExtension)
-                                .GetMethod(nameof(SqlServerJsonExtension.JsonValue)))
-                    .HasSchema("")
-                    .HasName("JSON_VALUE")                    
-                ;
+                .ApplyConfiguration(new RewriteRuleMap());
+
+            var jsonValueMethod = typeof(SqlServerJsonExtension).GetMethod(nameof(SqlServerJsonExtension.JsonValue));
+
+            modelBuilder.
+                HasDbFunction(jsonValueMethod)
+                 .HasTranslation(args =>
+                 {
+                     return SqlFunctionExpression.Create("JSON_VALUE", args, jsonValueMethod.ReturnType, null);
+                 })
+                .HasParameter("column").Metadata.TypeMapping = new StringTypeMapping("NVARCHAR(MAX)");
+
+            modelBuilder
+                .HasDbFunction(typeof(SqlServerJsonExtension).GetMethod(nameof(SqlServerJsonExtension.DatePart)))
+                .HasTranslation(args => SqlFunctionExpression.Create("DatePart", args, typeof(int?), null));
         }
 
         #region properties
@@ -61,7 +72,7 @@ namespace Cofoundry.Domain.Data
 
         /// <summary>
         /// Lookup cache used for quickly finding the correct version for a
-        /// specific publish status query e.g. 'Latest', 'Published', 
+        /// specific publish status query e.g. 'Latest', 'Published',
         /// 'PreferPublished'. These records are generated when custom entities
         /// are published or unpublished.
         /// </summary>
@@ -87,13 +98,13 @@ namespace Cofoundry.Domain.Data
 
         /// <summary>
         /// A Page Template represents a physical view template file and is used
-        /// by a Page to render out content. 
+        /// by a Page to render out content.
         /// </summary>
         public DbSet<PageTemplate> PageTemplates { get; set; }
 
         /// <summary>
-        /// Each PageTemplate can have zero or more regions which are defined in the 
-        /// template file using the CofoundryTemplate helper, 
+        /// Each PageTemplate can have zero or more regions which are defined in the
+        /// template file using the CofoundryTemplate helper,
         /// e.g. @Cofoundry.Template.Region("MyRegionName"). These regions represent
         /// areas where page blocks can be placed (i.e. insert content).
         /// </summary>
@@ -102,16 +113,16 @@ namespace Cofoundry.Domain.Data
         public DbSet<Locale> Locales { get; set; }
 
         /// <summary>
-        /// Pages represent the dynamically navigable pages of your website. Each page uses a template 
-        /// which defines the regions of content that users can edit. Pages are a versioned entity and 
-        /// therefore have many page version records. At one time a page may only have one draft 
-        /// version, but can have many published versions; the latest published version is the one that 
-        /// is rendered when the page is published. 
+        /// Pages represent the dynamically navigable pages of your website. Each page uses a template
+        /// which defines the regions of content that users can edit. Pages are a versioned entity and
+        /// therefore have many page version records. At one time a page may only have one draft
+        /// version, but can have many published versions; the latest published version is the one that
+        /// is rendered when the page is published.
         /// </summary>
         public DbSet<Page> Pages { get; set; }
 
         /// <summary>
-        /// Represents a folder in the dynamic web page heirarchy. There is always a 
+        /// Represents a folder in the dynamic web page heirarchy. There is always a
         /// single root directory.
         /// </summary>
         public DbSet<PageDirectory> PageDirectories { get; set; }
@@ -119,17 +130,17 @@ namespace Cofoundry.Domain.Data
         public DbSet<PageDirectoryLocale> PageDirectoryLocales { get; set; }
 
         /// <summary>
-        /// A block can optionally have display templates associated with it, 
+        /// A block can optionally have display templates associated with it,
         /// which will give the user a choice about how the data is rendered out
-        /// e.g. 'Wide', 'Headline', 'Large', 'Reversed'. If no template is set then 
+        /// e.g. 'Wide', 'Headline', 'Large', 'Reversed'. If no template is set then
         /// the default view is used for rendering.
         /// </summary>
         public DbSet<PageBlockTypeTemplate> PageBlockTypeTemplates { get; set; }
 
         /// <summary>
-        /// Page block types represent a type of content that can be inserted into a content 
-        /// region of a page which could be simple content like 'RawHtml', 'Image' or 
-        /// 'PlainText'. Custom and more complex block types can be defined by a 
+        /// Page block types represent a type of content that can be inserted into a content
+        /// region of a page which could be simple content like 'RawHtml', 'Image' or
+        /// 'PlainText'. Custom and more complex block types can be defined by a
         /// developer. Block types are typically created when the application
         /// starts up in the auto-update process.
         /// </summary>
@@ -145,7 +156,7 @@ namespace Cofoundry.Domain.Data
         /// Pages are a versioned entity and therefore have many page version
         /// records. At one time a page may only have one draft version, but
         /// can have many published versions; the latest published version is
-        /// the one that is rendered when the page is published. 
+        /// the one that is rendered when the page is published.
         /// </summary>
         public DbSet<PageVersion> PageVersions { get; set; }
 
@@ -153,7 +164,7 @@ namespace Cofoundry.Domain.Data
 
         /// <summary>
         /// Lookup cache used for quickly finding the correct version for a
-        /// specific publish status query e.g. 'Latest', 'Published', 
+        /// specific publish status query e.g. 'Latest', 'Published',
         /// 'PreferPublished'. These records are generated when pages
         /// are published or unpublished.
         /// </summary>
@@ -173,13 +184,13 @@ namespace Cofoundry.Domain.Data
 
         /// <summary>
         /// Represents the user in the Cofoundry custom identity system. Users can be partitioned into
-        /// different 'User Areas' that enabled the identity system use by the Cofoundry administration area 
+        /// different 'User Areas' that enabled the identity system use by the Cofoundry administration area
         /// to be reused for other purposes, but this isn't a common scenario and often there will only be the Cofoundry UserArea.
         /// </summary>
         public DbSet<User> Users { get; set; }
 
         /// <summary>
-        /// Users can be partitioned into different 'User Areas' that enabled the identity system use by the Cofoundry administration area 
+        /// Users can be partitioned into different 'User Areas' that enabled the identity system use by the Cofoundry administration area
         /// to be reused for other purposes, but this isn't a common scenario and often there will only be the Cofoundry UserArea. UserAreas
         /// are defined in code by defining an IUserAreaDefinition
         /// </summary>
@@ -194,6 +205,6 @@ namespace Cofoundry.Domain.Data
         /// </summary>
         public DbSet<UnstructuredDataDependency> UnstructuredDataDependencies { get; set; }
 
-        #endregion
+        #endregion properties
     }
 }

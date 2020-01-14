@@ -10,8 +10,8 @@ namespace Cofoundry.Domain
 {
     /// <summary>
     /// Gets a page PageRenderSummary projection by id, which is
-    /// a lighter weight projection designed for rendering to a site when the 
-    /// templates, region and block data is not required. The result is 
+    /// a lighter weight projection designed for rendering to a site when the
+    /// templates, region and block data is not required. The result is
     /// version-sensitive and defaults to returning published versions only, but
     /// this behavior can be controlled by the publishStatus query property.
     /// </summary>
@@ -36,7 +36,7 @@ namespace Cofoundry.Domain
             _pageRenderSummaryMapper = pageRenderSummaryMapper;
         }
 
-        #endregion
+        #endregion constructor
 
         #region execution
 
@@ -50,7 +50,7 @@ namespace Cofoundry.Domain
             if (dbPage == null) return null;
 
             var page = _pageRenderSummaryMapper.Map<PageRenderSummary>(dbPage, pageRoute);
-            
+
             return page;
         }
 
@@ -82,15 +82,15 @@ namespace Cofoundry.Domain
                     .FilterActive()
                     .FilterByStatus(query.PublishStatus, executionContext.ExecutionDate)
                     .FilterByPageId(query.PageId)
+                    .Include(v => v.PageVersion.OpenGraphImageAsset)
                     .Select(p => p.PageVersion)
-                    .Include(v => v.OpenGraphImageAsset)
                     .FirstOrDefaultAsync();
             }
 
             return result;
         }
 
-        #endregion
+        #endregion execution
 
         #region Permission
 
@@ -99,6 +99,6 @@ namespace Cofoundry.Domain
             yield return new PageReadPermission();
         }
 
-        #endregion
+        #endregion Permission
     }
 }

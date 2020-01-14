@@ -21,6 +21,7 @@ namespace Cofoundry.Domain
         private readonly ICustomEntityDefinitionRepository _customEntityDefinitionRepository;
         private readonly ICustomEntityRenderSummaryMapper _customEntityRenderSummaryMapper;
         private readonly ISearchSpecificationMapper<Expression> _searchSpecificationMapper;
+
         public SearchCustomEntitiesQueryHandler(
             CofoundryDbContext dbContext,
             ICustomEntityDefinitionRepository customEntityDefinitionRepository,
@@ -33,7 +34,6 @@ namespace Cofoundry.Domain
             _customEntityRenderSummaryMapper = customEntityRenderSummaryMapper;
             _searchSpecificationMapper = searchSpecificationMapper;
         }
-
 
         public async Task<PagedQueryResult<CustomEntityRenderSummary>> ExecuteAsync(SearchCustomEntitiesQuery query, IExecutionContext executionContext)
         {
@@ -54,9 +54,10 @@ namespace Cofoundry.Domain
                 .AsNoTracking()
                 .FilterByCustomEntityDefinitionCode(query.CustomEntityDefinitionCode)
                 .FilterActive()
-                .FilterByStatus(query.PublishStatus, executionContext.ExecutionDate);
+                .FilterByStatus(query.PublishStatus, executionContext.ExecutionDate)
+                .Include(x => x.CustomEntity);
 
-            // Filter by locale 
+            // Filter by locale
             if (query.LocaleId > 0 && definition.HasLocale)
             {
                 dbQuery = dbQuery.Where(p => p.CustomEntity.LocaleId == query.LocaleId);
@@ -80,13 +81,13 @@ namespace Cofoundry.Domain
 
             PagedQueryResult<CustomEntityVersion> dbPagedResult = await dbQuery
                 .SortBy(definition, query.SortBy, query.SortDirection)
+                .Include(e => e.CustomEntityVersion)
+                .ThenInclude(e => e.CustomEntity)
                 .Select(p => p.CustomEntityVersion)
-                .Include(e => e.CustomEntity)
                 .ToPagedResultAsync(query);
 
             return dbPagedResult;
         }
-
 
         public IEnumerable<IPermissionApplication> GetPermissions(SearchCustomEntitiesQuery query)
         {
@@ -98,7 +99,7 @@ namespace Cofoundry.Domain
 
         private class JsonValueModifier<TEntity> : ExpressionVisitor
         {
-            readonly Dictionary<Type, string> typesToConvert = new Dictionary<Type, string>
+            private readonly Dictionary<Type, string> typesToConvert = new Dictionary<Type, string>
                 {
                     { typeof(int), nameof(Convert.ToInt32) },
                     { typeof(long), nameof(Convert.ToInt64) },
@@ -108,8 +109,8 @@ namespace Cofoundry.Domain
                     { typeof(bool), nameof(Convert.ToBoolean) }
                 };
 
-            readonly ParameterExpression parameterExpression;
-            readonly MemberExpression memberExpression;
+            private readonly ParameterExpression parameterExpression;
+            private readonly MemberExpression memberExpression;
 
             public JsonValueModifier(Expression<Func<TEntity, string>> expr)
             {
@@ -150,6 +151,5 @@ namespace Cofoundry.Domain
                 return Expression.Parameter(typeof(TEntity), node.Name);
             }
         }
-
     }
 }

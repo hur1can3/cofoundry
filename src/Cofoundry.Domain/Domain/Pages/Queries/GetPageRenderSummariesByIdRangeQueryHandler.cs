@@ -10,7 +10,7 @@ using Cofoundry.Core;
 namespace Cofoundry.Domain
 {
     /// <summary>
-    /// Gets a range of pages by their ids projected as PageRenderDetails models. A PageRenderDetails contains 
+    /// Gets a range of pages by their ids projected as PageRenderDetails models. A PageRenderDetails contains
     /// the data required to render a page, including template data for all the content-editable regions.
     /// </summary>
     public class GetPageRenderSummariesByIdRangeQueryHandler
@@ -34,7 +34,7 @@ namespace Cofoundry.Domain
             _pageRenderSummaryMapper = pageRenderSummaryMapper;
         }
 
-        #endregion
+        #endregion constructor
 
         #region execution
 
@@ -52,7 +52,7 @@ namespace Cofoundry.Domain
 
             return pages.ToDictionary(d => d.PageId);
         }
-        
+
         private async Task<List<PageVersion>> GetPagesAsync(GetPageRenderSummariesByIdRangeQuery query, IExecutionContext executionContext)
         {
             if (query.PublishStatus == PublishStatusQuery.SpecificVersion)
@@ -66,14 +66,14 @@ namespace Cofoundry.Domain
                 .FilterActive()
                 .FilterByStatus(query.PublishStatus, executionContext.ExecutionDate)
                 .Where(v => query.PageIds.Contains(v.PageId))
+                .Include(v => v.PageVersion.OpenGraphImageAsset)
                 .Select(r => r.PageVersion)
-                .Include(v => v.OpenGraphImageAsset)
                 .ToListAsync();
 
             return dbResults;
         }
 
-        #endregion
+        #endregion execution
 
         #region Permission
 
@@ -82,6 +82,6 @@ namespace Cofoundry.Domain
             yield return new PageReadPermission();
         }
 
-        #endregion
+        #endregion Permission
     }
 }

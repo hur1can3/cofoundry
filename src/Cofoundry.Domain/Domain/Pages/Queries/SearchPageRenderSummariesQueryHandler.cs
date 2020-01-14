@@ -11,12 +11,12 @@ namespace Cofoundry.Domain
 {
     /// <summary>
     /// Search page data returning the PageRenderSummary projection, which is
-    /// a lighter weight projection designed for rendering to a site when the 
-    /// templates, region and block data is not required. The result is 
+    /// a lighter weight projection designed for rendering to a site when the
+    /// templates, region and block data is not required. The result is
     /// version-sensitive and defaults to returning published versions only, but
     /// this behavior can be controlled by the PublishStatus query property.
     /// </summary>
-    public class SearchPageRenderSummariesQueryHandler 
+    public class SearchPageRenderSummariesQueryHandler
         : IAsyncQueryHandler<SearchPageRenderSummariesQuery, PagedQueryResult<PageRenderSummary>>
         , IPermissionRestrictedQueryHandler<SearchPageRenderSummariesQuery, PagedQueryResult<PageRenderSummary>>
     {
@@ -63,7 +63,7 @@ namespace Cofoundry.Domain
                 .FilterActive()
                 ;
 
-            // Filter by locale 
+            // Filter by locale
             if (query.LocaleId > 0)
             {
                 dbQuery = dbQuery.FilterByLocaleId(query.LocaleId.Value);
@@ -77,8 +77,8 @@ namespace Cofoundry.Domain
 
             return dbQuery
                 .SortBy(query.SortBy, query.SortDirection)
-                .Select(p => p.PageVersion)
-                .Include(p => p.OpenGraphImageAsset);
+                .Include(p => p.PageVersion.OpenGraphImageAsset)
+                .Select(p => p.PageVersion);
         }
 
         #region Permission
@@ -88,6 +88,6 @@ namespace Cofoundry.Domain
             yield return new PageReadPermission();
         }
 
-        #endregion
+        #endregion Permission
     }
 }

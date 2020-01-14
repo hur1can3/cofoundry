@@ -22,7 +22,7 @@ namespace Cofoundry.Domain
 
         public GetCustomEntityRenderSummariesByUrlSlugQueryHandler(
             CofoundryDbContext dbContext,
-            IQueryExecutor queryExecutor, 
+            IQueryExecutor queryExecutor,
             ICustomEntityRenderSummaryMapper customEntityRenderSummaryMapper,
             ICustomEntityDefinitionRepository customEntityDefinitionRepository
             )
@@ -32,7 +32,7 @@ namespace Cofoundry.Domain
             _customEntityDefinitionRepository = customEntityDefinitionRepository;
         }
 
-        #endregion
+        #endregion constructor
 
         public async Task<ICollection<CustomEntityRenderSummary>> ExecuteAsync(GetCustomEntityRenderSummariesByUrlSlugQuery query, IExecutionContext executionContext)
         {
@@ -43,8 +43,9 @@ namespace Cofoundry.Domain
                 .FilterByCustomEntityDefinitionCode(query.CustomEntityDefinitionCode)
                 .FilterByCustomEntityUrlSlug(query.UrlSlug)
                 .FilterByStatus(query.PublishStatus, executionContext.ExecutionDate)
+                .Include(e => e.CustomEntityVersion)
+                .ThenInclude(e => e.CustomEntity)
                 .Select(e => e.CustomEntityVersion)
-                .Include(e => e.CustomEntity)
                 .ToListAsync();
 
             if (!dbResult.Any()) return Array.Empty<CustomEntityRenderSummary>();
@@ -53,7 +54,7 @@ namespace Cofoundry.Domain
 
             return result;
         }
-        
+
         #region Permission
 
         public IEnumerable<IPermissionApplication> GetPermissions(GetCustomEntityRenderSummariesByUrlSlugQuery query)
@@ -64,6 +65,6 @@ namespace Cofoundry.Domain
             yield return new CustomEntityReadPermission(definition);
         }
 
-        #endregion
+        #endregion Permission
     }
 }
